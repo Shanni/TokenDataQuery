@@ -6,9 +6,10 @@ import { UniswapService } from './uniswap/uniswap.service';
 import { HttpModule } from '@nestjs/axios';
 import { TaskService } from './task/task.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ResourceModule } from './resource/resource.module';
 
 @Module({
-  imports: [HttpModule, ScheduleModule.forRoot()],
+  imports: [HttpModule, ScheduleModule.forRoot(), ResourceModule],
   controllers: [AppController, FetchTokenController],
   providers: [AppService, UniswapService, TaskService],
 })

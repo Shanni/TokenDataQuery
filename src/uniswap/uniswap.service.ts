@@ -48,14 +48,16 @@ export class UniswapService {
       },
     };
 
-    this.logger.log(`fetchToken: ${JSON.stringify(body)}`);
+    this.logger.log(`fetchToken ${tokenSymbol}: ${JSON.stringify(body)}`);
     try {
       const res = await rx.lastValueFrom(
         this.httpService
           .post(this.endpointUrl, body)
           .pipe(rx.map((response) => response.data)),
       );
-      this.logger.log(`fetchToken Response: ${JSON.stringify(res)}`);
+      this.logger.log(
+        `fetchToken Response ${tokenSymbol}: ${JSON.stringify(res)}`,
+      );
       return res;
     } catch (err) {
       this.logger.log(
@@ -106,18 +108,19 @@ export class UniswapService {
       },
     };
 
-    this.logger.log(`fetchToken: ${JSON.stringify(body)}`);
     try {
       const res = await rx.lastValueFrom(
         this.httpService
           .post(this.endpointUrl, body)
           .pipe(rx.map((response) => response.data)),
       );
-      this.logger.log(`fetchToken Response: ${JSON.stringify(res)}`);
+      this.logger.log(
+        `fetchToken7DaysData ${tokenSymbol} Response: ${JSON.stringify(res)}`,
+      );
       return res;
     } catch (err) {
       this.logger.log(
-        `fetchToken7DaysData Error: ${JSON.stringify(
+        `fetchToken7DaysData ${tokenSymbol} Error: ${JSON.stringify(
           (err as AxiosError)?.response?.data,
         )}`,
       );
@@ -131,12 +134,44 @@ export class UniswapService {
     }
   }
 
+  generate7DaysDateArray() {
+    const dates = [];
+    const endDate = new Date(); // Current date and time
+    const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+
+    for (
+      let date = startDate;
+      date <= endDate;
+      date.setHours(date.getHours() + 1)
+    ) {
+      dates.push(new Date(date)); // Push a copy of the date to the array
+    }
+
+    return dates;
+  }
+
   async fetchToken7DaysData(tokenSymbol: string) {
-    // Get the current date and time
-    const currentDate = new Date();
-    // Subtract 7 days
-    const daysAgo7 = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-    await this.fetchTokenDataWithTime(tokenSymbol, daysAgo7);
+    const dates = this.generate7DaysDateArray(); // Generate the array of Date objects
+
+    // Use Promise.allSettled to handle each promise independently
+    const results = await Promise.allSettled(
+      dates.map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
+    );
+
+    // Process the results
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        console.log(
+          `Data Token ${tokenSymbol} from ${dates[index].toISOString()}:`,
+          result.value,
+        );
+      } else {
+        console.log(
+          `Error ${tokenSymbol} for ${dates[index].toISOString()}:`,
+          result.reason,
+        );
+      }
+    });
   }
 
   async updateTokenData(tokenSymbol: string) {

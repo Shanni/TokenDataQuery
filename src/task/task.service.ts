@@ -7,7 +7,9 @@ import { UniswapService } from 'src/uniswap/uniswap.service';
 export class TaskService {
   private readonly logger = new Logger(TaskService.name);
 
-  constructor(private readonly uniswapService: UniswapService) {}
+  constructor(private readonly uniswapService: UniswapService) {
+    this.startOneTimeTask();
+  }
 
   @Cron(CronExpression.EVERY_HOUR, {
     name: 'fetchTokenDataEveryHour',
@@ -18,5 +20,11 @@ export class TaskService {
     this.uniswapService.updateTokenData('SHIB');
 
     this.logger.debug('Running token fetch task every hour');
+  }
+
+  startOneTimeTask() {
+    this.uniswapService.fetchToken7DaysData('WBTC');
+    this.uniswapService.fetchToken7DaysData('GNO');
+    this.uniswapService.fetchToken7DaysData('SHIB');
   }
 }
