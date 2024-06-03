@@ -9,14 +9,14 @@ export class TaskService {
 
   constructor(private readonly uniswapService: UniswapService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS, {
+  @Cron(CronExpression.EVERY_HOUR, {
     name: 'fetchTokenDataEveryHour',
   })
   handleCron() {
     this.uniswapService.fetchToken7DaysData('WBTC');
     this.uniswapService.fetchToken7DaysData('GNO');
-    this.uniswapService.fetchToken7DaysData('WBTC');
+    this.uniswapService.fetchToken7DaysData('SHIB');
 
-    this.logger.debug('Running a task every hour');
+    this.logger.debug('Running token fetch task every hour');
   }
 }

@@ -73,7 +73,7 @@ export class UniswapService {
     }
   }
 
-  async fetchToken7DaysData(tokenSymbol: string) {
+  async fetchTokenDataWithTime(tokenSymbol: string, time: Date) {
     // Get the token address
     const tokenAddress =
       TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
@@ -81,14 +81,8 @@ export class UniswapService {
       throw new HttpException('Token not supported', HttpStatus.FORBIDDEN);
     }
 
-    // Get the current date and time
-    const currentDate = new Date();
-
-    // Subtract 7 days
-    const daysAgo7 = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    // Calculate the time string for 7 days ago, and get the integer value
-    const daysAgo7Time = (daysAgo7.getTime() / 3600 / 1000) | 0;
+    // Calculate the time, and get the integer value
+    const timeTruc = (time.getTime() / 3600 / 1000) | 0;
 
     const query = `
         query Query($id: ID!) {
@@ -105,7 +99,7 @@ export class UniswapService {
     const body = {
       query,
       variables: {
-        id: `${tokenAddress}-${daysAgo7Time}`,
+        id: `${tokenAddress}-${timeTruc}`,
       },
       headers: {
         'Content-Type': 'application/json',
@@ -137,7 +131,15 @@ export class UniswapService {
     }
   }
 
-  async fetchTokenData(tokenSymbol: string, intervalInDays: number) {
+  async fetchToken7DaysData(tokenSymbol: string) {
+    // Get the current date and time
+    const currentDate = new Date();
+    // Subtract 7 days
+    const daysAgo7 = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    await this.fetchTokenDataWithTime(tokenSymbol, daysAgo7);
+  }
+
+  async getTokenData(tokenSymbol: string, intervalInDays: number) {
     throw new Error('Method not implemented.' + tokenSymbol + intervalInDays);
   }
 }
