@@ -7,10 +7,11 @@ import { HttpModule } from '@nestjs/axios';
 import { TaskService } from './task/task.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ResourceModule } from './resource/resource.module';
+import { DatabaseService } from './database/database.service';
 
 @Module({
   imports: [HttpModule, ScheduleModule.forRoot(), ResourceModule],
   controllers: [AppController, FetchTokenController],
-  providers: [AppService, UniswapService, TaskService],
+  providers: [AppService, UniswapService, TaskService, DatabaseService],
 })
 export class AppModule {}
