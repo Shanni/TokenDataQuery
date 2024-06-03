@@ -139,6 +139,11 @@ export class UniswapService {
     await this.fetchTokenDataWithTime(tokenSymbol, daysAgo7);
   }
 
+  async updateTokenData(tokenSymbol: string) {
+    await this.fetchToken(tokenSymbol);
+    await this.fetchTokenDataWithTime(tokenSymbol, new Date());
+  }
+
   async getTokenData(tokenSymbol: string, intervalInDays: number) {
     throw new Error('Method not implemented.' + tokenSymbol + intervalInDays);
   }
