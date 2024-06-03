@@ -26,7 +26,7 @@ model Token {
 }
 
 model TokenPriceData {
-  id              Int    @id @default(autoincrement())
+  id              Int    @id @unique
   token Token @relation(fields: [tokenAddress], references: [tokenAddress])
   tokenAddress    String
   periodStartUnix Int  

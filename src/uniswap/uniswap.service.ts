@@ -4,6 +4,8 @@ import * as rx from 'rxjs';
 import { AxiosError } from 'axios';
 import { response } from 'express';
 
+import { FetchTokenService } from 'src/fetch-token/fetch-token.service';
+
 enum TokenAddresses {
   WBTC = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
   SHIB = '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
@@ -16,8 +18,10 @@ export class UniswapService {
 
   endpointUrl = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3';
 
-  constructor(private httpService: HttpService) {} // ,
-  // private databaseService: DatabaseService, // private configService: ConfigService,
+  constructor(
+    private httpService: HttpService,
+    private tokenService: FetchTokenService,
+  ) {}
 
   async fetchToken(tokenSymbol: string) {
     const tokenAddress =
@@ -161,12 +165,12 @@ export class UniswapService {
     // Process the results
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
-        console.log(
+        this.logger.log(
           `Data Token ${tokenSymbol} from ${dates[index].toISOString()}:`,
           result.value,
         );
       } else {
-        console.log(
+        this.logger.log(
           `Error ${tokenSymbol} for ${dates[index].toISOString()}:`,
           result.reason,
         );
@@ -175,7 +179,11 @@ export class UniswapService {
   }
 
   async updateTokenData(tokenSymbol: string) {
-    await this.fetchToken(tokenSymbol);
+    // Fetch token data, save it to the database
+    const token = await this.fetchToken(tokenSymbol);
+    await this.tokenService.saveTokenData(token);
+
+    // Fetch 7 days data for the token, save it to the database
     await this.fetchTokenDataWithTime(tokenSymbol, new Date());
   }
 
