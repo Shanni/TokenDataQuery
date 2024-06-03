@@ -15,6 +15,6 @@ export class FetchTokenController {
     @Param('tokenSymbol') tokenSymbol: string,
     @Param('intervalInDays') intervalInDays: number,
   ) {
-    return this.uniswapService.fetchToken7DaysData(tokenSymbol, intervalInDays);
+    return this.uniswapService.fetchTokenData(tokenSymbol, intervalInDays);
   }
 }

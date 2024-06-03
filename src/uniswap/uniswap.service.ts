@@ -1,6 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as rx from 'rxjs';
+import { AxiosError } from 'axios';
+import { response } from 'express';
 
 enum TokenAddresses {
   WBTC = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
@@ -56,23 +58,22 @@ export class UniswapService {
       this.logger.log(`fetchToken Response: ${JSON.stringify(res)}`);
       return res;
     } catch (err) {
-      //   this.logger.log(
-      //     `createAccount Error: ${JSON.stringify(
-      //       (err as AxiosError)?.response?.data,
-      //     )}`,
-      //   );
-      //   const responseBody = {
-      //     error: 'NorthCapital Error',
-      //     detail: (err as AxiosError)?.response?.data,
-      //   };
-      //   return response
-      //     .status((err as AxiosError)?.response?.status || 500)
-      //     .json(responseBody);
+      this.logger.log(
+        `fetchToken Error: ${JSON.stringify(
+          (err as AxiosError)?.response?.data,
+        )}`,
+      );
+      const responseBody = {
+        error: 'Uniswap GraphQL Error',
+        detail: (err as AxiosError)?.response?.data,
+      };
+      return response
+        .status((err as AxiosError)?.response?.status || 500)
+        .json(responseBody);
     }
   }
 
-  async fetchToken7DaysData(tokenSymbol: string, intervalInDays: number) {
-    console.log(intervalInDays);
+  async fetchToken7DaysData(tokenSymbol: string) {
     // Get the token address
     const tokenAddress =
       TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
@@ -121,18 +122,22 @@ export class UniswapService {
       this.logger.log(`fetchToken Response: ${JSON.stringify(res)}`);
       return res;
     } catch (err) {
-      //   this.logger.log(
-      //     `createAccount Error: ${JSON.stringify(
-      //       (err as AxiosError)?.response?.data,
-      //     )}`,
-      //   );
-      //   const responseBody = {
-      //     error: 'NorthCapital Error',
-      //     detail: (err as AxiosError)?.response?.data,
-      //   };
-      //   return response
-      //     .status((err as AxiosError)?.response?.status || 500)
-      //     .json(responseBody);
+      this.logger.log(
+        `fetchToken7DaysData Error: ${JSON.stringify(
+          (err as AxiosError)?.response?.data,
+        )}`,
+      );
+      const responseBody = {
+        error: 'Uniswap GraphQL Error',
+        detail: (err as AxiosError)?.response?.data,
+      };
+      return response
+        .status((err as AxiosError)?.response?.status || 500)
+        .json(responseBody);
     }
+  }
+
+  async fetchTokenData(tokenSymbol: string, intervalInDays: number) {
+    throw new Error('Method not implemented.' + tokenSymbol + intervalInDays);
   }
 }
