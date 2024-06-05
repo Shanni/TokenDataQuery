@@ -16,15 +16,15 @@ export class TaskService {
   })
   handleCron() {
     this.uniswapService.updateTokenData('WBTC');
-    this.uniswapService.updateTokenData('GNO');
-    this.uniswapService.updateTokenData('SHIB');
+    // this.uniswapService.updateTokenData('GNO');
+    // this.uniswapService.updateTokenData('SHIB');
 
     this.logger.debug('Running token fetch task every hour');
   }
 
   startOneTimeTask() {
-    this.uniswapService.fetchToken7DaysData('WBTC');
-    this.uniswapService.fetchToken7DaysData('GNO');
-    this.uniswapService.fetchToken7DaysData('SHIB');
+    this.uniswapService.createTokenData('WBTC');
+    // this.uniswapService.fetchToken7DaysData('GNO');
+    // this.uniswapService.fetchToken7DaysData('SHIB');
   }
 }

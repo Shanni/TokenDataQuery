@@ -6,7 +6,7 @@ import { response } from 'express';
 
 import { FetchTokenService } from 'src/fetch-token/fetch-token.service';
 
-enum TokenAddresses {
+export enum TokenAddresses {
   WBTC = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
   SHIB = '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
   GNO = '0x6810e776880c02933d47db1b9fc05908e5386b96',
@@ -33,6 +33,7 @@ export class UniswapService {
     const query = `
     query Query($id: ID!) {
         token(id: $id) {
+          id
           name
           symbol
           totalSupply
@@ -138,6 +139,7 @@ export class UniswapService {
     }
   }
 
+  // Helper function. Generate an array of Date objects for the last 7 days
   generate7DaysDateArray() {
     const dates = [];
     const endDate = new Date(); // Current date and time
@@ -154,30 +156,69 @@ export class UniswapService {
     return dates;
   }
 
+  /**
+   *  Fetch token data for the last 7 days, and save it to the database
+   * @param tokenSymbol
+   */
   async fetchToken7DaysData(tokenSymbol: string) {
     const dates = this.generate7DaysDateArray(); // Generate the array of Date objects
 
     // Use Promise.allSettled to handle each promise independently
     const results = await Promise.allSettled(
-      dates.map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
+      dates
+        .slice(1, 5)
+        .map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
     );
 
-    // Process the results
-    results.forEach((result, index) => {
+    this.logger.log('Results:', results);
+    // Process the results, save the data to the database
+    const promises = [];
+
+    for (const [index, result] of results.entries()) {
       if (result.status === 'fulfilled') {
         this.logger.log(
           `Data Token ${tokenSymbol} from ${dates[index].toISOString()}:`,
           result.value,
         );
+        // Push the save operation as a promise into the promises array
+        promises.push(this.tokenService.saveTokenPriceData(result.value));
       } else {
         this.logger.log(
           `Error ${tokenSymbol} for ${dates[index].toISOString()}:`,
           result.reason,
         );
       }
-    });
+    }
+
+    try {
+      // Await all save operations
+      const responses = await Promise.all(promises);
+      this.logger.log('All token price data saved successfully:', responses);
+    } catch (error) {
+      this.logger.error('Error in saving token price data:', error);
+    }
   }
 
+  /**
+   * function to create token data and token price data in cron job, call at the start of the application
+   *
+   * @param tokenSymbol
+   */
+  async createTokenData(tokenSymbol: string) {
+    // Fetch token data, save it to the database
+    const token = await this.fetchToken(tokenSymbol);
+    await this.tokenService.saveTokenData(token.data.token);
+    this.logger.log('Token data saved:', token.data.token);
+
+    // Fetch 7 days data for the token, save it to the database
+    await this.fetchToken7DaysData(tokenSymbol);
+  }
+
+  /**
+   * function to update token data and token price data in cron job, every 1 hour
+   *
+   * @param tokenSymbol
+   */
   async updateTokenData(tokenSymbol: string) {
     // Fetch token data, save it to the database
     const token = await this.fetchToken(tokenSymbol);

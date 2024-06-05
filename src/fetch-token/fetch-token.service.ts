@@ -2,7 +2,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 
 /**
- * Service to fetch token data
+ * Service to save token data and save token price data
  * @class
  * @name FetchTokenService
  */
@@ -12,14 +12,15 @@ export class FetchTokenService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async saveTokenData(tokenData) {
-    if (!tokenData || !tokenData.tokenAddress) {
+    if (!tokenData) {
       throw new HttpException('Token data is required', HttpStatus.BAD_REQUEST);
     }
+
     try {
       // Check if token already exists
       let token = await this.databaseService.token.findUnique({
         where: {
-          tokenAddress: tokenData.tokenAddress,
+          tokenAddress: tokenData.id,
         },
       });
 
@@ -28,11 +29,11 @@ export class FetchTokenService {
         this.logger.log('Token already exists, update token', token);
         token = await this.databaseService.token.update({
           where: {
-            tokenAddress: tokenData.tokenAddress,
+            tokenAddress: tokenData.id,
           },
           data: {
-            totalSupply: tokenData.totalSupply,
-            volumeUSD: tokenData.volumeUSD,
+            totalSupply: +tokenData.totalSupply,
+            volumeUSD: +tokenData.volumeUSD,
           },
         });
         return token;
@@ -41,12 +42,12 @@ export class FetchTokenService {
       // If token does not exist, create token
       token = await this.databaseService.token.create({
         data: {
-          tokenAddress: tokenData.tokenAddress,
+          tokenAddress: tokenData.id,
           name: tokenData.name,
           symbol: tokenData.symbol,
-          totalSupply: tokenData.totalSupply,
-          volumeUSD: tokenData.volumeUSD,
-          decimals: tokenData.decimals,
+          totalSupply: +tokenData.totalSupply,
+          volumeUSD: +tokenData.volumeUSD,
+          decimals: +tokenData.decimals,
         },
       });
       this.logger.log('Token created:', token);
@@ -83,12 +84,12 @@ export class FetchTokenService {
           data: {
             tokenAddress: tokenPriceData.tokenAddress,
             id: tokenPriceData.id,
-            open: tokenPriceData.open,
-            close: tokenPriceData.close,
-            high: tokenPriceData.high,
-            low: tokenPriceData.low,
-            priceUSD: tokenPriceData.priceUSD,
-            periodStartUnix: tokenPriceData.periodStartUnix,
+            open: +tokenPriceData.open,
+            close: +tokenPriceData.close,
+            high: +tokenPriceData.high,
+            low: +tokenPriceData.low,
+            priceUSD: +tokenPriceData.priceUSD,
+            periodStartUnix: +tokenPriceData.periodStartUnix,
           },
         });
         return tokenPrice;
@@ -97,5 +98,13 @@ export class FetchTokenService {
       this.logger.error('Failed to create token price:', error);
       throw error;
     }
+  }
+
+  getToken(tokenAddress: string) {
+    return this.databaseService.token.findUnique({
+      where: {
+        tokenAddress,
+      },
+    });
   }
 }
