@@ -2,7 +2,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { UniswapService } from 'src/uniswap/uniswap.service';
 
 @Controller('token')
-export class FetchTokenController {
+export class TokenController {
   constructor(private readonly uniswapService: UniswapService) {}
 
   @Get(':tokenSymbol')

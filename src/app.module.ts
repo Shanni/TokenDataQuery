@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { FetchTokenController } from './fetch-token/fetch-token.controller';
+import { TokenController } from './token/token.controller';
 import { UniswapService } from './uniswap/uniswap.service';
 import { HttpModule } from '@nestjs/axios';
 import { TaskService } from './task/task.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ResourceModule } from './resource/resource.module';
 import { DatabaseService } from './database/database.service';
-import { FetchTokenService } from './fetch-token/fetch-token.service';
+import { TokenService } from './token/token.service';
 
 @Module({
   imports: [HttpModule, ScheduleModule.forRoot(), ResourceModule],
-  controllers: [AppController, FetchTokenController],
+  controllers: [AppController, TokenController],
   providers: [
     AppService,
     UniswapService,
     TaskService,
     DatabaseService,
-    FetchTokenService,
+    TokenService,
   ],
 })
 export class AppModule {}

@@ -7,8 +7,8 @@ import { DatabaseService } from 'src/database/database.service';
  * @name FetchTokenService
  */
 @Injectable()
-export class FetchTokenService {
-  logger = new Logger(FetchTokenService.name);
+export class TokenService {
+  logger = new Logger(TokenService.name);
   constructor(private readonly databaseService: DatabaseService) {}
 
   async saveTokenData(tokenData) {

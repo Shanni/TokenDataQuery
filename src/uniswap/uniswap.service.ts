@@ -3,8 +3,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as rx from 'rxjs';
 import { AxiosError } from 'axios';
 import { response } from 'express';
-
-import { FetchTokenService } from 'src/fetch-token/fetch-token.service';
+import { TokenService } from 'src/token/token.service';
 
 export enum TokenAddresses {
   WBTC = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
@@ -20,7 +19,7 @@ export class UniswapService {
 
   constructor(
     private httpService: HttpService,
-    private tokenService: FetchTokenService,
+    private tokenService: TokenService,
   ) {}
 
   async fetchToken(tokenSymbol: string) {
@@ -199,34 +198,34 @@ export class UniswapService {
     }
   }
 
-  /**
-   * function to create token data and token price data in cron job, call at the start of the application
-   *
-   * @param tokenSymbol
-   */
-  async createTokenData(tokenSymbol: string) {
-    // Fetch token data, save it to the database
-    const token = await this.fetchToken(tokenSymbol);
-    await this.tokenService.saveTokenData(token.data.token);
-    this.logger.log('Token data saved:', token.data.token);
+  // /**
+  //  * function to create token data and token price data in cron job, call at the start of the application
+  //  *
+  //  * @param tokenSymbol
+  //  */
+  // async createTokenData(tokenSymbol: string) {
+  //   // Fetch token data, save it to the database
+  //   const token = await this.fetchToken(tokenSymbol);
+  //   await this.tokenService.saveTokenData(token.data.token);
+  //   this.logger.log('Token data saved:', token.data.token);
 
-    // Fetch 7 days data for the token, save it to the database
-    await this.fetchToken7DaysData(tokenSymbol);
-  }
+  //   // Fetch 7 days data for the token, save it to the database
+  //   await this.fetchToken7DaysData(tokenSymbol);
+  // }
 
-  /**
-   * function to update token data and token price data in cron job, every 1 hour
-   *
-   * @param tokenSymbol
-   */
-  async updateTokenData(tokenSymbol: string) {
-    // Fetch token data, save it to the database
-    const token = await this.fetchToken(tokenSymbol);
-    await this.tokenService.saveTokenData(token);
+  // /**
+  //  * function to update token data and token price data in cron job, every 1 hour
+  //  *
+  //  * @param tokenSymbol
+  //  */
+  // async updateTokenData(tokenSymbol: string) {
+  //   // Fetch token data, save it to the database
+  //   const token = await this.fetchToken(tokenSymbol);
+  //   await this.tokenService.saveTokenData(token);
 
-    // Fetch 7 days data for the token, save it to the database
-    await this.fetchTokenDataWithTime(tokenSymbol, new Date());
-  }
+  //   // Fetch 7 days data for the token, save it to the database
+  //   await this.fetchTokenDataWithTime(tokenSymbol, new Date());
+  // }
 
   async getTokenData(tokenSymbol: string, intervalInDays: number) {
     throw new Error('Method not implemented.' + tokenSymbol + intervalInDays);
