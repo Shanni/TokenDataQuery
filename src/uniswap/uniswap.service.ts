@@ -167,7 +167,7 @@ export class UniswapService {
     // Use Promise.allSettled to handle each promise independently
     const results = await Promise.allSettled(
       dates
-        .slice(1, 5)
+        .slice(1, 20)
         .map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
     );
 
@@ -199,38 +199,5 @@ export class UniswapService {
     } catch (error) {
       this.logger.error('Error in saving token price data:', error);
     }
-  }
-
-  // /**
-  //  * function to create token data and token price data in cron job, call at the start of the application
-  //  *
-  //  * @param tokenSymbol
-  //  */
-  // async createTokenData(tokenSymbol: string) {
-  //   // Fetch token data, save it to the database
-  //   const token = await this.fetchToken(tokenSymbol);
-  //   await this.tokenService.saveTokenData(token.data.token);
-  //   this.logger.log('Token data saved:', token.data.token);
-
-  //   // Fetch 7 days data for the token, save it to the database
-  //   await this.fetchToken7DaysData(tokenSymbol);
-  // }
-
-  // /**
-  //  * function to update token data and token price data in cron job, every 1 hour
-  //  *
-  //  * @param tokenSymbol
-  //  */
-  // async updateTokenData(tokenSymbol: string) {
-  //   // Fetch token data, save it to the database
-  //   const token = await this.fetchToken(tokenSymbol);
-  //   await this.tokenService.saveTokenData(token);
-
-  //   // Fetch 7 days data for the token, save it to the database
-  //   await this.fetchTokenDataWithTime(tokenSymbol, new Date());
-  // }
-
-  async getTokenData(tokenSymbol: string, intervalInDays: number) {
-    throw new Error('Method not implemented.' + tokenSymbol + intervalInDays);
-  }
+  }g
 }
