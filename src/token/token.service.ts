@@ -1,6 +1,8 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { TokenAddresses } from 'src/token/token.enum';
+import { from } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /**
  * Service to save token data and save token price data
@@ -115,7 +117,7 @@ export class TokenService {
   }
 
   getTokenData7Days(tokenSymbol: string, timeUnitInHours: number) {
-    return this.databaseService.tokenPriceData.findMany({
+    const tokenPricesPromise = this.databaseService.tokenPriceData.findMany({
       where: {
         token: {
           symbol: tokenSymbol,
@@ -125,5 +127,21 @@ export class TokenService {
         },
       },
     });
+
+    this.logger.log(tokenPricesPromise);
+    const tokenPricesObservable = from(tokenPricesPromise); // Convert Promise to Observable
+
+    return tokenPricesObservable.pipe(
+      map((data) =>
+        data.filter((item, _) => {
+          const referenceTime = new Date().getTime() / 1000 - 7 * 24 * 60 * 60; // start of the period
+          return (
+            (item.periodStartUnix - referenceTime) %
+              (timeUnitInHours * 60 * 60) ===
+            0
+          );
+        }),
+      ),
+    );
   }
 }

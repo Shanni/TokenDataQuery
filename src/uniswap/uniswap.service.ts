@@ -199,5 +199,5 @@ export class UniswapService {
     } catch (error) {
       this.logger.error('Error in saving token price data:', error);
     }
-  }g
+  }
 }
