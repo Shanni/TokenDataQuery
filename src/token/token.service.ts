@@ -111,4 +111,8 @@ export class TokenService {
       },
     });
   }
+
+  getTokenData(tokenSymbol: string, intervalInDays: number) {
+    throw new Error('Method not implemented.');
+  }
 }

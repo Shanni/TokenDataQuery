@@ -1,13 +1,13 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { UniswapService } from 'src/uniswap/uniswap.service';
+import { TokenService } from './token.service';
 
 @Controller('token')
 export class TokenController {
-  constructor(private readonly uniswapService: UniswapService) {}
+  constructor(private readonly tokenService: TokenService) {}
 
   @Get(':tokenSymbol')
   getToken(@Param('tokenSymbol') tokenSymbol: string) {
-    return this.uniswapService.fetchToken(tokenSymbol);
+    return this.tokenService.getToken(tokenSymbol);
   }
 
   @Get(':tokenSymbol/interval/:intervalInDays')
@@ -15,6 +15,6 @@ export class TokenController {
     @Param('tokenSymbol') tokenSymbol: string,
     @Param('intervalInDays') intervalInDays: number,
   ) {
-    return this.uniswapService.getTokenData(tokenSymbol, intervalInDays);
+    return this.tokenService.getTokenData(tokenSymbol, intervalInDays);
   }
 }
