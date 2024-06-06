@@ -2,11 +2,18 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+Token API
+
+GET /tokens/{tokenSymbol}: //Fetches details for a token. 
+GET /tokens/{tokenSymbol}/data: //Retrieves historical data for a token
+
 ## Installation
 
 ```bash
 $ npm install
 ```
+
+## Start Database from Docker Compose
 
 ## Running the app
 
@@ -15,7 +22,7 @@ $ npm install
 $ npm run start
 
 # watch mode
-$ npm run start:dev
+$ npm run startd
 
 ```
 
