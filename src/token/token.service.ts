@@ -1,6 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { connect } from 'http2';
 import { DatabaseService } from 'src/database/database.service';
+import { TokenAddresses } from 'src/token/token.enum';
 
 /**
  * Service to save token data and save token price data
@@ -104,7 +104,9 @@ export class TokenService {
     }
   }
 
-  getToken(tokenAddress: string) {
+  getToken(tokenSymbol: string) {
+    const tokenAddress =
+      TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
     return this.databaseService.token.findUnique({
       where: {
         tokenAddress,
@@ -112,7 +114,16 @@ export class TokenService {
     });
   }
 
-  getTokenData(tokenSymbol: string, intervalInDays: number) {
-    throw new Error('Method not implemented.');
+  getTokenData7Days(tokenSymbol: string, timeUnitInHours: number) {
+    return this.databaseService.tokenPriceData.findMany({
+      where: {
+        token: {
+          symbol: tokenSymbol,
+        },
+        periodStartUnix: {
+          gte: new Date().getTime() / 1000 - 7 * 24 * 60 * 60,
+        },
+      },
+    });
   }
 }

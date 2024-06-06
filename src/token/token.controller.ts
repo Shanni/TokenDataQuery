@@ -10,11 +10,11 @@ export class TokenController {
     return this.tokenService.getToken(tokenSymbol);
   }
 
-  @Get(':tokenSymbol/interval/:intervalInDays')
+  @Get(':tokenSymbol/interval/:timeUnitInHours')
   getTokenDataInDays(
     @Param('tokenSymbol') tokenSymbol: string,
-    @Param('intervalInDays') intervalInDays: number,
+    @Param('timeUnitInHours') timeUnitInHours: number,
   ) {
-    return this.tokenService.getTokenData(tokenSymbol, intervalInDays);
+    return this.tokenService.getTokenData7Days(tokenSymbol, timeUnitInHours);
   }
 }
