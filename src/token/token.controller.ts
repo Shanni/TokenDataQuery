@@ -1,7 +1,7 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { TokenService } from './token.service';
 
-@Controller('token')
+@Controller('tokens')
 export class TokenController {
   constructor(private readonly tokenService: TokenService) {}
 
@@ -10,10 +10,10 @@ export class TokenController {
     return this.tokenService.getToken(tokenSymbol);
   }
 
-  @Get(':tokenSymbol/interval/:timeUnitInHours')
+  @Get(':tokenSymbol/data')
   getTokenDataInDays(
     @Param('tokenSymbol') tokenSymbol: string,
-    @Param('timeUnitInHours') timeUnitInHours: number,
+    @Query('timeUnit') timeUnitInHours: number,
   ) {
     return this.tokenService.getTokenData7Days(tokenSymbol, timeUnitInHours);
   }

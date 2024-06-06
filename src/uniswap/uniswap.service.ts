@@ -166,9 +166,7 @@ export class UniswapService {
 
     // Use Promise.allSettled to handle each promise independently
     const results = await Promise.allSettled(
-      dates
-        .slice(1, 20)
-        .map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
+      dates.map((date) => this.fetchTokenDataWithTime(tokenSymbol, date)),
     );
 
     this.logger.log('Results:', results);

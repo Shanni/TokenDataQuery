@@ -3,7 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { TokenAddresses } from 'src/token/token.enum';
 import { from } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+import { format } from 'date-fns';
 /**
  * Service to save token data and save token price data
  * @class
@@ -117,31 +117,54 @@ export class TokenService {
   }
 
   getTokenData7Days(tokenSymbol: string, timeUnitInHours: number) {
+    const tokenAddress =
+      TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
+    this.logger.log(tokenAddress);
     const tokenPricesPromise = this.databaseService.tokenPriceData.findMany({
       where: {
-        token: {
-          symbol: tokenSymbol,
-        },
+        tokenAddress,
         periodStartUnix: {
           gte: new Date().getTime() / 1000 - 7 * 24 * 60 * 60,
         },
       },
     });
 
-    this.logger.log(tokenPricesPromise);
     const tokenPricesObservable = from(tokenPricesPromise); // Convert Promise to Observable
 
     return tokenPricesObservable.pipe(
       map((data) =>
         data.filter((item, _) => {
-          const referenceTime = new Date().getTime() / 1000 - 7 * 24 * 60 * 60; // start of the period
+          const hourIndex = (new Date().getTime() / 3600 / 1000) | 0; // get unique hour within unix history
+          const hourStartUnix = hourIndex * 3600; // want the rounded effect
+
           return (
-            (item.periodStartUnix - referenceTime) %
-              (timeUnitInHours * 60 * 60) ===
+            (item.periodStartUnix - hourStartUnix) %
+              (timeUnitInHours * 3600) ===
             0
           );
         }),
       ),
+      map(this.transformDataToNestedArrays),
     );
+  }
+
+  transformDataToNestedArrays(data: any[]) {
+    // Convert UNIX timestamp to readable date-time format
+    const convertToReadableDate = (unixTimestamp: number) => {
+      const date = new Date(unixTimestamp * 1000);
+      return format(date, "yyyy-MM-dd'T'HH:mm:ss");
+    };
+    // Reformat the data
+    const reformattedData = [[], [], [], [], []]; // Arrays for open, close, high, low, priceUSD
+
+    data.forEach((item) => {
+      const formattedDate = convertToReadableDate(item.periodStartUnix);
+      reformattedData[0].push([formattedDate, 'open', item.open]);
+      reformattedData[1].push([formattedDate, 'close', item.close]);
+      reformattedData[2].push([formattedDate, 'high', item.high]);
+      reformattedData[3].push([formattedDate, 'low', item.low]);
+      reformattedData[4].push([formattedDate, 'priceUSD', item.priceUSD]);
+    });
+    return reformattedData;
   }
 }
