@@ -1,4 +1,5 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { connect } from 'http2';
 import { DatabaseService } from 'src/database/database.service';
 
 /**
@@ -59,7 +60,7 @@ export class TokenService {
   }
 
   async saveTokenPriceData(tokenPriceData) {
-    if (!tokenPriceData || !tokenPriceData.tokenAddress) {
+    if (!tokenPriceData) {
       throw new HttpException(
         'Token price data is required',
         HttpStatus.BAD_REQUEST,
@@ -67,33 +68,36 @@ export class TokenService {
     }
 
     try {
-      // Check if token price already exists
-      let tokenPrice = await this.databaseService.tokenPriceData.findUnique({
+      const tokenPrice = await this.databaseService.tokenPriceData.upsert({
         where: {
           id: tokenPriceData.id,
         },
-      });
-
-      // If token price exists, update token price
-      if (tokenPrice) {
-        this.logger.log(
-          'Token price already exists, update token price',
-          tokenPrice,
-        );
-        tokenPrice = await this.databaseService.tokenPriceData.create({
-          data: {
-            tokenAddress: tokenPriceData.tokenAddress,
-            id: tokenPriceData.id,
-            open: +tokenPriceData.open,
-            close: +tokenPriceData.close,
-            high: +tokenPriceData.high,
-            low: +tokenPriceData.low,
-            priceUSD: +tokenPriceData.priceUSD,
-            periodStartUnix: +tokenPriceData.periodStartUnix,
+        update: {
+          tokenAddress: tokenPriceData.id.split('-')[0],
+          id: tokenPriceData.id,
+          open: +tokenPriceData.open,
+          close: +tokenPriceData.close,
+          high: +tokenPriceData.high,
+          low: +tokenPriceData.low,
+          priceUSD: +tokenPriceData.priceUSD,
+          periodStartUnix: tokenPriceData.periodStartUnix,
+        },
+        create: {
+          id: tokenPriceData.id,
+          open: +tokenPriceData.open,
+          close: +tokenPriceData.close,
+          high: +tokenPriceData.high,
+          low: +tokenPriceData.low,
+          priceUSD: +tokenPriceData.priceUSD,
+          periodStartUnix: tokenPriceData.periodStartUnix,
+          token: {
+            connect: {
+              tokenAddress: tokenPriceData.id.split('-')[0],
+            },
           },
-        });
-        return tokenPrice;
-      }
+        },
+      });
+      return tokenPrice;
     } catch (error) {
       this.logger.error('Failed to create token price:', error);
       throw error;

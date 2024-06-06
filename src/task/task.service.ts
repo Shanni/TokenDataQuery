@@ -40,7 +40,6 @@ export class TaskService {
   async createTokenData(tokenSymbol: string) {
     // Fetch token data, save it to the database
     const token = await this.uniswapService.fetchToken(tokenSymbol);
-    this.logger.log('Token data???????:', token);
     await this.tokenService.saveTokenData(token.data.token);
     this.logger.log('Token data saved:', token.data.token);
 

@@ -93,15 +93,20 @@ export class UniswapService {
     const query = `
         query Query($id: ID!) {
             tokenHourData(id: $id) {
+                id
                 open
                 close
                 high
                 low
                 priceUSD
+                periodStartUnix
             }
           }
         `;
 
+    this.logger.log(
+      `fetchTokenDataWithTime ${tokenSymbol}: ${JSON.stringify(query)}`,
+    );
     const body = {
       query,
       variables: {
@@ -119,17 +124,19 @@ export class UniswapService {
           .pipe(rx.map((response) => response.data)),
       );
       this.logger.log(
-        `fetchToken7DaysData ${tokenSymbol} Response: ${JSON.stringify(res)}`,
+        `fetchTokenDataWithTime ${tokenSymbol} Response: ${JSON.stringify(
+          res,
+        )}`,
       );
       return res;
     } catch (err) {
       this.logger.log(
-        `fetchToken7DaysData ${tokenSymbol} Error: ${JSON.stringify(
+        `fetchTokenDataWithTime ${tokenSymbol} Error: ${JSON.stringify(
           (err as AxiosError)?.response?.data,
         )}`,
       );
       const responseBody = {
-        error: 'Uniswap GraphQL Error',
+        error: 'Uniswap fetchTokenDataWithTime GraphQL Error',
         detail: (err as AxiosError)?.response?.data,
       };
       return response
@@ -179,8 +186,9 @@ export class UniswapService {
           `Data Token ${tokenSymbol} from ${dates[index].toISOString()}:`,
           result.value,
         );
+        const tokenPriceData = result.value.data.tokenHourData;
         // Push the save operation as a promise into the promises array
-        promises.push(this.tokenService.saveTokenPriceData(result.value));
+        promises.push(this.tokenService.saveTokenPriceData(tokenPriceData));
       } else {
         this.logger.log(
           `Error ${tokenSymbol} for ${dates[index].toISOString()}:`,
