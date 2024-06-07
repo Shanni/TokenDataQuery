@@ -43,9 +43,20 @@ describe('UniswapService', () => {
   describe('fetchToken', () => {
     it('should fetch token data successfully', async () => {
       const result = {
-        data: { token: { id: '1', name: 'ETH', symbol: 'ETH' } },
+        data: {
+          token: {
+            id: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+            name: 'Wrapped BTC',
+            symbol: 'WBTC',
+            totalSupply: 18240,
+            volumeUSD: 120242943725.3597,
+            decimals: 8,
+          },
+        },
       };
-      jest.spyOn(httpService, 'post').mockImplementation(() => of(result));
+      jest
+        .spyOn(httpService, 'post')
+        .mockImplementation(() => of(result as any));
 
       expect(await service.fetchToken('ETH')).toEqual(result);
       expect(httpService.post).toHaveBeenCalledWith(
