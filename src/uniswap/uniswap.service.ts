@@ -11,7 +11,7 @@ import { TokenAddresses } from 'src/token/token.enum';
  */
 @Injectable()
 export class UniswapService {
-  logger = new Logger('UniswapService');
+  logger = new Logger(UniswapService.name);
 
   endpointUrl = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3';
 
