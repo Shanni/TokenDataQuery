@@ -1,11 +1,11 @@
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-Token API
+Token Price Tracker API
 
 GET /tokens/{tokenSymbol}: //Fetches details for a token. 
 GET /tokens/{tokenSymbol}/data: //Retrieves historical data for a token
+
+Check out API doc for more details: https://documenter.getpostman.com/view/27775840/2sA3XJmkBy
 
 ## Installation
 
