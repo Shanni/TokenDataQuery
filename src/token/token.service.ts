@@ -4,16 +4,25 @@ import { TokenAddresses } from 'src/token/token.enum';
 import { from } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { format } from 'date-fns';
+
 /**
- * Service to save token data and save token price data
- * @class
- * @name FetchTokenService
+ * Provides methods for saving and retrieving token and token price data to/from a database. This service interacts closely with the DatabaseService to perform CRUD operations on token-related data.
+ *
+ * @class TokenService
+ * @description Handles the storage, update, and retrieval of token data and token price data in a PostgreSQL database.
  */
 @Injectable()
 export class TokenService {
   logger = new Logger(TokenService.name);
   constructor(private readonly databaseService: DatabaseService) {}
 
+  /**
+   * Saves token data to the database. It checks if the token already exists; if so, it updates the existing token, otherwise, it creates a new token record.
+   *
+   * @param {any} tokenData - The token data to save. Must include 'id', 'name', 'symbol', 'totalSupply', 'volumeUSD', and 'decimals'.
+   * @throws {HttpException} Throws an HttpException with HttpStatus.BAD_REQUEST if tokenData is null or undefined.
+   * @returns {Promise<any>} A promise that resolves with the saved or updated token record.
+   */
   async saveTokenData(tokenData) {
     if (!tokenData) {
       throw new HttpException('Token data is required', HttpStatus.BAD_REQUEST);
@@ -61,6 +70,13 @@ export class TokenService {
     }
   }
 
+  /**
+   * Saves or updates token price data in the database. If the price data already exists, it updates the existing record, otherwise, it creates a new one.
+   *
+   * @param {any} tokenPriceData - The token price data to save or update. Must include 'id', 'open', 'close', 'high', 'low', 'priceUSD', 'periodStartUnix'.
+   * @throws {HttpException} Throws an HttpException with HttpStatus.BAD_REQUEST if tokenPriceData is null or undefined.
+   * @returns {Promise<any>} A promise that resolves with the created or updated token price record.
+   */
   async saveTokenPriceData(tokenPriceData) {
     if (!tokenPriceData) {
       throw new HttpException(
@@ -106,6 +122,12 @@ export class TokenService {
     }
   }
 
+  /**
+   * Retrieves a token's detailed data from the database using the token's symbol.
+   *
+   * @param {string} tokenSymbol - The symbol of the token to retrieve, corresponding to keys in `TokenAddresses`.
+   * @returns {Promise<any>} A promise that resolves with the token data if found, or null if no token matches the provided symbol.
+   */
   getToken(tokenSymbol: string) {
     const tokenAddress =
       TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
@@ -116,6 +138,15 @@ export class TokenService {
     });
   }
 
+  /**
+   * Retrieves 7 days of price data for a specific token, filtered by the specified time unit in hours.
+   * This method uses RxJS to handle asynchronous data streams, filtering and transforming the data appropriately.
+   *
+   * @param {string} tokenSymbol - The symbol of the token for which to retrieve price data.
+   * @param {number} timeUnitInHours - Time interval in hours to filter the price data.
+   * @returns {Observable<any[]>} An observable that emits arrays of price data grouped by time intervals.
+   * @description The method retrieves price data, filters it based on the provided time interval, and formats the results into nested arrays suitable for time series analysis.
+   */
   getTokenData7Days(tokenSymbol: string, timeUnitInHours: number) {
     const tokenAddress =
       TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
@@ -124,7 +155,7 @@ export class TokenService {
       where: {
         tokenAddress,
         periodStartUnix: {
-          gte: new Date().getTime() / 1000 - 7 * 24 * 60 * 60,
+          gte: new Date().getTime() / 1000 - 7 * 24 * 60 * 60, // current time minus 7 days in seconds
         },
       },
     });
@@ -148,6 +179,13 @@ export class TokenService {
     );
   }
 
+  /**
+   * Transforms an array of raw token price data into a nested array format, separating different price metrics.
+   *
+   * @param {any[]} data - The array of raw data to transform.
+   * @returns {any[][]} A nested array where each sub-array corresponds to a different price metric (open, close, high, low, priceUSD), formatted with timestamps.
+   * @description Each sub-array contains tuples of formatted date-time, metric name, and value.
+   */
   transformDataToNestedArrays(data: any[]) {
     // Convert UNIX timestamp to readable date-time format
     const convertToReadableDate = (unixTimestamp: number) => {

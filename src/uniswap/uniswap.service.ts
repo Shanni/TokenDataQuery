@@ -6,6 +6,9 @@ import { response } from 'express';
 import { TokenService } from 'src/token/token.service';
 import { TokenAddresses } from 'src/token/token.enum';
 
+/**
+ * Service to interact with the Uniswap V3 GraphQL API.
+ */
 @Injectable()
 export class UniswapService {
   logger = new Logger('UniswapService');
@@ -17,6 +20,12 @@ export class UniswapService {
     private tokenService: TokenService,
   ) {}
 
+  /**
+   * Fetches token details from the Uniswap subgraph by token symbol.
+   * @param {string} tokenSymbol The symbol of the token to fetch.
+   * @returns {Promise<any>} The GraphQL response containing token details.
+   * @throws {HttpException} If the token symbol is not supported.
+   */
   async fetchToken(tokenSymbol: string) {
     const tokenAddress =
       TokenAddresses[tokenSymbol as keyof typeof TokenAddresses];
@@ -74,6 +83,13 @@ export class UniswapService {
     }
   }
 
+  /**
+   * Fetches historical token data based on a specific time.
+   * @param {string} tokenSymbol The token's symbol.
+   * @param {Date} time The date and time for which to fetch the data.
+   * @returns {Promise<any>} The GraphQL response containing historical data.
+   * @throws {HttpException} If the token symbol is not supported.
+   */
   async fetchTokenDataWithTime(tokenSymbol: string, time: Date) {
     // Get the token address
     const tokenAddress =
@@ -140,7 +156,11 @@ export class UniswapService {
     }
   }
 
-  // Helper function. Generate an array of Date objects for the last 7 days
+  /**
+   * Generates an array of Date objects representing each hour for the last 7 days.
+   * This utility function is useful for retrieving time-series data.
+   * @returns {Date[]} An array of Date objects.
+   */
   generate7DaysDateArray() {
     const dates = [];
     const endDate = new Date(); // Current date and time
@@ -158,8 +178,12 @@ export class UniswapService {
   }
 
   /**
-   *  Fetch token data for the last 7 days, and save it to the database
-   * @param tokenSymbol
+   * Fetches token data for the last 7 days from the Uniswap API and saves it to the database.
+   * It fetches the data hourly over the last 7 days and handles each fetch independently.
+   *
+   * @param {string} tokenSymbol The symbol of the token for which data is being fetched.
+   * @returns {Promise<void>} Completes when all data has been fetched and saved.
+   * @throws {HttpException} If any fetch encounters a problem, logs the error without throwing to avoid stopping the batch process.
    */
   async fetchToken7DaysData(tokenSymbol: string) {
     const dates = this.generate7DaysDateArray(); // Generate the array of Date objects
@@ -170,9 +194,9 @@ export class UniswapService {
     );
 
     this.logger.log('Results:', results);
-    // Process the results, save the data to the database
-    const promises = [];
 
+    // Process each result, attempting to save the data to the database
+    const promises = [];
     for (const [index, result] of results.entries()) {
       if (result.status === 'fulfilled') {
         this.logger.log(
